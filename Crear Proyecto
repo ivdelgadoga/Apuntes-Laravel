@@ -7,7 +7,7 @@ composer create-project laravel/laravel miProyecto --prefer-source
 
 cd miProyecto
 
-3.- Verificar que exitan archivos como:
+3.- Verificar que existan archivos como:
 
 artisan
 composer.json
@@ -35,5 +35,165 @@ Repetir paso 4
 php artisan --versión 
 Laravel Framework 13.34.0
 
+7.- Configurar la BD en el archivo .env, Laravel carga sqlite por default:
+
+- Descomentar en php.ini las extensiones 
+extension=sqlite3  
+extension=pdo_sqlite3
+
+- Compobrar que estén cargados:
+
+php -m | findstr sqlite
+-pdo_sqlite
+sqlite3
+
+- Crear la base de datos SQLite
+
+cd C:\Users\ivdelgadoga\miProyecto
+
+type nul > database\database.sqlite
+
+- Comprobar que existe:
+
+dir database
+
+- Configurar el archivo .env
+
+DB_CONNECTION=sqlite
+
+#DB_HOST=
+#DB_PORT=
+#DB_DATABASE=
+#DB_USERNAME=
+#DB_PASSWORD=
+
+- Limpiar la caché de configuración:
+
+php artisan config:clear
+php artisan cache:clear
+
+- Ejecutar las migraciones
+
+php artisan migrate
+
+- Debería aparecer algo parecido a:
+
+INFO Running migrations.
+
+0001_01_01_00000_create_users_table ....... DONE
+0001_01_01_00001_create_cache_table ....... DONE
+0001_01_01_00002_create_jobs_table ....... DONE
+
+- Iniciar Laravel
+
+php artisan serve
+
+http://127.0.0.1:8000
+
+- Crear un modelo
+
+php artisan make:model Empleado -m
+
+- Editar y ejecutar la migración
+
+php artisan migrate
+
+- En la migración YYYY_MM_DD_XXXXX_create_empleados_table.php
+
+Verificar el método up y agregar más campos:
+
+public function up(): void
+    {
+        Schema::create('empleados', function (Blueprint $table) {
+            $table->id();
+            $table->string('nombre'); # Nuevo
+            $table->string('puesto'); # Nuevo
+            $table->timestamps();
+        });
+    }
+
+- Volver a crear la tabla (el comando fresh se utiliza en cada cambio),
+
+php artisan migrate:fresh
+
+- Configurar el modelo
+
+En app/Modelo/Empleado.php
+
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Empleado extends Model
+{
+    // Se agregan los campos en la migración 
+    protected $fillable = [
+        'nombre',
+        'puesto'
+    ];
+}
+
+-- Se crea el Controller
+
+php artisan make:controller EmpleadoController
+
+app/Http/Controllers/EmpleadoController.php
+
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Http\Controllers\Controller;
+use App\Models\Empleado;
+use Illuminate\Http\Request;
+
+class EmpleadoController extends Controller
+{
+    // Listar empleados
+    public function index()
+    {
+        return response()->json(
+            Empleado::all()
+        );
+    }
+}
+
+-- Se crea la ruta
+
+routes/api.php
+
+<?php
+
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\EmpleadoController;
+
+Route::get('/empleados', [EmpleadoController::class, 'index']);
+
+-- En bootstrap/app.php agregamos la ruta
+
+->withRouting(
+        web: __DIR__.'/../routes/web.php',
+        api: __DIR__ . '/../routes/api.php', # Nuevo
+        commands: __DIR__.'/../routes/console.php',
+        health: '/up',
+    )
+
+-- Verificar que Laravel detecte la ruta
+
+php artisan route:list
+
+ GET|HEAD  / .............................................................. routes/web.php:5
+ GET|HEAD  api/empleados .......................................... EmpleadoController@index
+ GET|HEAD  storage/{path} storage.local › vendor/laravel/framework/src/Illuminate/Filesyste…
+ PUT       storage/{path} storage.local.upload › vendor/laravel/framework/src/Illuminate/Fi…
+ GET|HEAD  up vendor/laravel/framework/src/Illuminate/Foundation/Configuration/ApplicationB…
+
+                                                                           Showing [5] routes
+
+-- Comprobar desde el navegador
+
+http://127.0.0.1:8000/api/empleados
 
 
