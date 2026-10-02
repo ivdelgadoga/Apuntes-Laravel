@@ -1,0 +1,39 @@
+
+1.- Crear el proyecto
+
+composer create-project laravel/laravel miProyecto --prefer-source
+
+2.- Entrar a la carpeta del proyecto
+
+cd miProyecto
+
+3.- Verificar que exitan archivos como:
+
+artisan
+composer.json
+.env
+routes
+app
+public
+
+4.- Levantar el servidor de desarrollo
+
+php artisan serve
+
+5.- Entrar a 
+
+http://127.0.0.1:8000/
+
+*En caso de error de clave ejecutar:
+
+php artisan key:generate
+
+Repetir paso 4
+
+6.- Verificar que Laravel esté instalado correctamente
+
+php artisan --versión 
+Laravel Framework 13.34.0
+
+
+
